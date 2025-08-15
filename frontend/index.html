@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentVinod Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nova+Square&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav id="nav">
+        <div class="logo-container">
+            <i class="fas fa-robot logo-icon"></i>
+            <span class="logo-text">AgentVinod</span>
+        </div>
+        <h4><a href="#home">HOME</a></h4>
+        <h4><a href="#about">ABOUT</a></h4>
+        <h4><a href="#features">FEATURES</a></h4>
+        <h4><a href="#contact">CONTACT</a></h4>
+        <button class="btn-yellow">Get Started</button>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="page1">
+        <div class="hero-content">
+            <h1>AgentVinod Assistant</h1>
+            <p>Your intelligent companion for automated tasks and smart solutions</p>
+        </div>
+    </section>
+
+    <!-- Main Chat Interface -->
+    <section class="ai-chat-section">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>Chat with AgentVinod <span>🤖</span></h2>
+                <p>Ask me anything or request assistance with your tasks</p>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I'm AgentVinod, your AI assistant. How can I help you today?</p>
+                        <span class="message-time">Just now</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input type="text" id="userInput" placeholder="Type your message or task..." />
+                <button id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- AI Capabilities Panel -->
+        <div class="capabilities-panel">
+            <h3>AI Capabilities</h3>
+            <div class="capability-grid">
+                <div class="capability-card" onclick="sendPredefinedMessage('What is 25 + 37?')">
+                    <i class="fas fa-calculator"></i>
+                    <h4>Math Operations</h4>
+                    <p>Calculate sums and solve math problems</p>
+                </div>
+                <div class="capability-card" onclick="sendPredefinedMessage('Is 17 prime?')">
+                    <i class="fas fa-hashtag"></i>
+                    <h4>Prime Numbers</h4>
+                    <p>Check if numbers are prime</p>
+                </div>
+                <div class="capability-card" onclick="sendPredefinedMessage('What is the price of bitcoin?')">
+                    <i class="fas fa-bitcoin"></i>
+                    <h4>Crypto Prices</h4>
+                    <p>Get real-time cryptocurrency prices</p>
+                </div>
+                <div class="capability-card" onclick="sendPredefinedMessage('Hello, how are you?')">
+                    <i class="fas fa-comments"></i>
+                    <h4>General Chat</h4>
+                    <p>Have conversations and get answers</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Status Indicator -->
+    <div class="status-indicator" id="statusIndicator">
+        <div class="status-dot"></div>
+        <span>AgentVinod Online</span>
+    </div>
+
+    <!-- Loading Animation -->
+    <div class="loading-animation" id="loadingAnimation" style="display: none;">
+        <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <p>AgentVinod is thinking...</p>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Made by <strong>Vishal Singh Chauhan</strong></p>
+            <p>Powered by Google Gemini AI | © 2025</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,17 +1,22 @@
 {
-  "name": "ai_agent",
+  "name": "agentvinod",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "backend/server.js",
   "type": "module",
   "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "cli": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "AgentVinod - AI Agent application with beautiful web interface powered by Google Gemini AI",
   "dependencies": {
     "@google/genai": "^1.14.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "express": "^5.1.0",
     "readline-sync": "^1.4.10"
   }
 }
