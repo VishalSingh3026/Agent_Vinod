@@ -13,7 +13,7 @@
   "license": "ISC",
   "description": "AgentVinod - AI Agent application with beautiful web interface powered by Google Gemini AI",
   "dependencies": {
-    "@google/genai": "^1.14.0",
+    "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",

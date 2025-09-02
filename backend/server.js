@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -8,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables from .env file
+// Load environment variables
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
@@ -16,172 +15,181 @@ const port = 3000;
 
 app.use(express.json());
 app.use(cors());
-
-// Serve static files from frontend directory
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-if (!GEMINI_API_KEY) {
-    console.error("GEMINI_API_KEY not found in environment variables. Please check your .env file.");
-    process.exit(1);
-}
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-// --- Your existing functions ---
-function sum({ num1, num2 }) {
-  return num1 + num2;
+// Simple functions for testing
+function sum(num1, num2) {
+    return num1 + num2;
 }
 
-function prime({ num }) {
+function isPrime(num) {
     if (num <= 1) return false;
-    for (let i = 2; i < num; i++) {
-        if (num % i === 0) return false;
+    if (num <= 3) return true;
+    if (num % 2 === 0 || num % 3 === 0) return false;
+    
+    for (let i = 5; i * i <= num; i += 6) {
+        if (num % i === 0 || num % (i + 2) === 0) return false;
     }
     return true;
 }
 
-async function getCryptoPrice({ coin }) {
+async function getCryptoPrice(coin) {
     try {
+        console.log('💰 Fetching crypto price for:', coin);
         const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coin}`);
         const data = await response.json();
-        return data;
+        
+        if (data && data.length > 0) {
+            const coinData = data[0];
+            return {
+                name: coinData.name,
+                symbol: coinData.symbol.toUpperCase(),
+                price: coinData.current_price,
+                change24h: coinData.price_change_percentage_24h
+            };
+        } else {
+            return null;
+        }
     } catch (error) {
-        return { error: "Could not fetch cryptocurrency price." };
+        console.error('💰 Crypto API Error:', error);
+        return null;
     }
 }
 
-// --- Your existing tool declarations ---
-const sumDeclaration = {
-    name: "sum",
-    description: "Get the sum of two numbers.",
-    parameters: {
-        type: 'OBJECT',
-        properties: {
-            num1: { type: 'NUMBER', description: 'It will be first number for addition ex:10' },
-            num2: { type: 'NUMBER', description: 'It will be second number for addition ex:20' }
-        },
-        required: ['num1', 'num2']
-    },
-};
-
-const primeDeclaration = {
-    name: "prime",
-    description: "Check if a number is prime.",
-    parameters: {
-        type: 'OBJECT',
-        properties: {
-            num: { type: 'NUMBER', description: 'It will be the number to find it is prime or not ex:7' },
-        },
-        required: ['num']
-    },
-};
-
-const cryptoDeclaration = {
-    name: "getCryptoPrice",
-    description: "Get the current price of any cryptocurrency like bitcoin.",
-    parameters: {
-        type: 'OBJECT',
-        properties: {
-            coin: { type: 'STRING', description: 'It will be crypto Currency name like bitcoin' },
-        },
-        required: ['coin']
-    },
-};
-
-const availableTools = {
-    sum: sum,
-    prime: prime,
-    getCryptoPrice: getCryptoPrice
-};
-
-// --- Modified runAgent function ---
-async function runAgent(userProblem, history) {
-    history.push({
-        role:'user',
-        parts:[{text:userProblem}]
-    });
-
-    while(true){    
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: history,
-            config:{
-                systemInstruction: `You are AgentVinod, an AI Agent. You have access of 3 available tools: sum, prime, and getCryptoPrice.
-                You can use these tools to solve the user's problem. If you need to use a tool, call it with the required parameters.
-                if ask general question answer directly if you don't need help from these tools.`,
-                tools:[{
-                    functionDeclarations:[sumDeclaration,primeDeclaration,cryptoDeclaration]
-                }],
-            },
-        });
-
-        if(response.functionCalls && response.functionCalls.length>0){
-            const {name,args} = response.functionCalls[0];
-
-            const funCall = availableTools[name];
-            const result = await funCall(args);
-
-            const functionResponsePart = {
-                name:name,
-                response: {
-                    result:result,
-                },
-            };
-            
-            // model
-            history.push({
-                role: "model",
-                parts: [
-                    {
-                        functionCall: response.functionCalls[0],
-                    },
-                ],
-            });
-            
-            //result ko daalna hai histroy mai
-            history.push({
-                role: "user",
-                parts: [
-                    {
-                        functionResponse: functionResponsePart,
-                    },
-                ],
-            });
+// Simple keyword-based function detection
+async function parseMessage(message) {
+    const lowerMessage = message.toLowerCase();
+    console.log('🔍 Processing message:', lowerMessage);
+    
+    // Check for crypto first (to avoid conflicts with "what is")
+    if (lowerMessage.includes('bitcoin') || lowerMessage.includes('crypto') || lowerMessage.includes('price') ||
+        lowerMessage.includes('ethereum') || lowerMessage.includes('btc') || lowerMessage.includes('eth')) {
+        console.log('💰 Crypto keyword detected');
+        
+        // Map common coin names to their API IDs
+        const coinMap = {
+            'bitcoin': 'bitcoin',
+            'btc': 'bitcoin',
+            'ethereum': 'ethereum',
+            'eth': 'ethereum',
+            'dogecoin': 'dogecoin',
+            'doge': 'dogecoin',
+            'cardano': 'cardano',
+            'ada': 'cardano',
+            'polkadot': 'polkadot',
+            'dot': 'polkadot'
+        };
+        
+        // Try to detect which coin they're asking about
+        let detectedCoin = null;
+        for (const [key, value] of Object.entries(coinMap)) {
+            if (lowerMessage.includes(key)) {
+                detectedCoin = value;
+                break;
+            }
+        }
+        
+        if (detectedCoin) {
+            console.log('💰 Detected coin:', detectedCoin);
+            try {
+                const data = await getCryptoPrice(detectedCoin);
+                if (data) {
+                    const changeText = data.change24h > 0 ? `+${data.change24h.toFixed(2)}%` : `${data.change24h.toFixed(2)}%`;
+                    return `💰 ${data.name} (${data.symbol}): $${data.price.toLocaleString()} (${changeText} 24h)`;
+                } else {
+                    return "Sorry, I couldn't fetch the price for that cryptocurrency.";
+                }
+            } catch (err) {
+                console.error('💰 Error fetching crypto price:', err);
+                return "Sorry, there was an error fetching the cryptocurrency price.";
+            }
         } else {
-            history.push({
-                role: 'model',
-                parts: [{ text: response.text }]
-            });
-            break;
+            return "I can help with cryptocurrency prices! Try asking about specific coins like 'bitcoin price', 'ethereum price', or 'dogecoin price'.";
         }
     }
     
-    // Return for web API instead of console.log
-    return { text: response.text, history: history };
+    // Check for prime number
+    if (lowerMessage.includes('prime')) {
+        console.log('🔢 Prime keyword detected');
+        // Extract any number from the message
+        const numberMatch = lowerMessage.match(/\d+/);
+        if (numberMatch) {
+            const num = parseInt(numberMatch[0]);
+            console.log('🔢 Found number:', num);
+            if (!isNaN(num)) {
+                const result = isPrime(num);
+                console.log('🔢 Prime result:', result);
+                return `${num} is ${result ? 'a prime' : 'not a prime'} number.`;
+            }
+        }
+    }
+    
+    // Math patterns - simplified (but more specific to avoid crypto conflicts)
+    if ((lowerMessage.includes('sum') || lowerMessage.includes('add') || lowerMessage.includes('+') || 
+        lowerMessage.includes('plus') || lowerMessage.includes('calculate') ||
+        (lowerMessage.includes('what is') && /\d+.*\d+/.test(lowerMessage))) && 
+        !lowerMessage.includes('price') && !lowerMessage.includes('crypto')) {
+        console.log('➕ Math keyword detected');
+        
+        // Extract all numbers from the message
+        const numbers = lowerMessage.match(/\d+/g);
+        if (numbers && numbers.length >= 2) {
+            const num1 = parseInt(numbers[0]);
+            const num2 = parseInt(numbers[1]);
+            console.log('➕ Found numbers:', num1, num2);
+            
+            if (!isNaN(num1) && !isNaN(num2)) {
+                const result = sum(num1, num2);
+                console.log('➕ Sum result:', result);
+                return `The sum of ${num1} and ${num2} is ${result}.`;
+            }
+        }
+    }
+    
+    // Default response
+    return "Hello! I'm AgentVinod. I can help you with:\n- Math calculations (e.g., 'What is 25 + 5?')\n- Prime number checks (e.g., 'Is 17 prime?')\n- Cryptocurrency prices (e.g., 'bitcoin price', 'ethereum price')!";
 }
 
-// --- API Endpoint ---
+// API endpoint
 app.post('/chat', async (req, res) => {
     try {
+        console.log('📨 Received chat request:', req.body.message);
+        
         const { message, history } = req.body;
+        
         if (!message) {
             return res.status(400).json({ error: 'Message is required' });
         }
-        const result = await runAgent(message, history || []);
-        res.json(result);
+        
+        const responseText = await parseMessage(message);
+        
+        console.log('📤 Sending response:', responseText);
+        
+        const newHistory = [...(history || [])];
+        newHistory.push(
+            { role: 'user', parts: [{ text: message }] },
+            { role: 'model', parts: [{ text: responseText }] }
+        );
+        
+        res.json({ 
+            text: responseText, 
+            history: newHistory 
+        });
+        
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'An error occurred while processing your request.' });
+        console.error('🚨 API Error:', error);
+        res.status(500).json({ error: 'Server error occurred' });
     }
 });
 
-// Serve the frontend
+// Serve frontend
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 app.listen(port, () => {
     console.log(`🚀 AgentVinod Server running on http://localhost:${port}`);
-    console.log(`📁 Frontend served from: ${path.join(__dirname, '../frontend')}`);
-    console.log(`🤖 Backend API available at: http://localhost:${port}/chat`);
+    console.log(`📁 Frontend: ${path.join(__dirname, '../frontend')}`);
+    console.log(`🤖 API: http://localhost:${port}/chat`);
+    console.log('✨ Basic keyword-based AI ready!');
 });
