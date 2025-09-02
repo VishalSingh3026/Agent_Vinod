@@ -73,7 +73,12 @@ class AIAgent {
         this.showLoading();
         
         try {
-            const response = await fetch('http://localhost:3000/chat', {
+            // Use relative path for API - works both locally and on Vercel
+            const apiUrl = window.location.hostname === 'localhost' 
+                ? 'http://localhost:3000/chat' 
+                : '/api/chat';
+            
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
