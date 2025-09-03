@@ -1,23 +1,9 @@
-import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Load environment variables
-dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config();
 
-const app = express();
-const port = 3000;
-
-app.use(express.json());
-app.use(cors());
-app.use(express.static(path.join(__dirname, '../frontend')));
-
-// Simple functions for testing
+// Helper functions
 function sum(num1, num2) {
     return num1 + num2;
 }
@@ -147,11 +133,25 @@ async function parseMessage(message) {
     }
     
     // Default response
-    return "Hello! I'm AgentVinod. I can help you";
+    return "Hello! I'm AgentVinod. I can help you with:\n- Math calculations (e.g., 'What is 25 + 5?')\n- Prime number checks (e.g., 'Is 17 prime?')\n- Cryptocurrency prices (e.g., 'bitcoin price', 'ethereum price')!";
 }
 
-// API endpoint
-app.post('/chat', async (req, res) => {
+export default async function handler(req, res) {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+    
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
+    
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+    
     try {
         console.log('📨 Received chat request:', req.body.message);
         
@@ -180,16 +180,4 @@ app.post('/chat', async (req, res) => {
         console.error('🚨 API Error:', error);
         res.status(500).json({ error: 'Server error occurred' });
     }
-});
-
-// Serve frontend
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
-});
-
-app.listen(port, () => {
-    console.log(`🚀 AgentVinod Server running on http://localhost:${port}`);
-    console.log(`📁 Frontend: ${path.join(__dirname, '../frontend')}`);
-    console.log(`🤖 API: http://localhost:${port}/chat`);
-    console.log('✨ Basic keyword-based AI ready!');
-});
+}

@@ -7,16 +7,20 @@
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
     "cli": "node index.js",
+    "build": "echo \"No build step required\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Vishal Singh Chauhan",
   "license": "ISC",
   "description": "AgentVinod - AI Agent application with beautiful web interface powered by Google Gemini AI",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.1",
-    "express": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "readline-sync": "^1.4.10"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
