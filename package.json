@@ -7,7 +7,12 @@
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
     "cli": "node index.js",
+<<<<<<< HEAD
     "build": "echo \"No build step required\"",
+=======
+    "build": "echo 'No build step required'",
+    "vercel-build": "echo 'Vercel build complete'",
+>>>>>>> bdd96b0d1822dc4555f0af6aba8eb0d4103bd46f
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Vishal Singh Chauhan",
