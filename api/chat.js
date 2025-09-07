@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-// Helper functions
+// Simple functions for testing
 function sum(num1, num2) {
     return num1 + num2;
 }
@@ -136,6 +136,7 @@ async function parseMessage(message) {
     return "Hello! I'm AgentVinod. I can help you with:\n- Math calculations (e.g., 'What is 25 + 5?')\n- Prime number checks (e.g., 'Is 17 prime?')\n- Cryptocurrency prices (e.g., 'bitcoin price', 'ethereum price')!";
 }
 
+// Vercel serverless function handler
 export default async function handler(req, res) {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Credentials', true);

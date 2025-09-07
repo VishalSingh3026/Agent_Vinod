@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import readlineSync from 'readline-sync';
-import dotenv from 'dotenv';
+    import dotenv from 'dotenv';
 
 // Load environment variables from .env file
 dotenv.config();
